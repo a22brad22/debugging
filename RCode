@@ -1,0 +1,42 @@
+```{r}
+## Import the data table for the comparison and save
+## the patient and control data into dataframes.
+data <- read.table(file = "2020_12_05_CUPBENZ_CUP_Proteins.csv", header = TRUE, sep = ",")
+cot <- data.frame(data$X, data$X.12, as.numeric(data$Normalized.abundance), as.numeric(data$X.13), as.numeric(data$X.14))
+cup <- data.frame(data$X, data$X.12, as.numeric(data$X.15), as.numeric(data$X.16), as.numeric(data$X.17))
+vei <- data.frame(data$X, data$X.12, as.numeric(data$X.18), as.numeric(data$X.19), as.numeric(data$X.20))
+## And initialize the dataframes for the pvalues.
+pCot <- data.frame("pValue")
+pCup <- data.frame("pValue")
+## Lastly, initialize the comparison dataframe for comparing directions.
+direction <- data.frame("veiXcup","cupXcot","Opposite Direction")
+```
+
+```{r}
+for (i in 3:nrow(data)){
+   vei3 <- c(vei[i,3],vei[i,4],vei[i,5])
+   cup3 <- c(cup[i,3],cup[i,4],cup[i,5])
+   cot3 <- c(cot[i,3],cot[i,4],cot[i,5])
+   pCup[i,1] <- t.test(vei3, cup3, var.equal = TRUE, alternative = "greater")$p.value
+   pCot[i,1] <- t.test(cup3, cot3, var.equal = TRUE, alternative = "greater")$p.value
+   direction[i,1] <- mean(vei3) < mean(cup3)
+   direction[i,2] <- mean(cup3) < mean(cot3)
+   direction[i,3] <- (direction[i,1] == direction[i,2]) 
+}
+```
+
+```{r}
+export <- data.frame(data$X, data$X.12, pCup$X.pValue., pCot$X.pValue., direction$X.Opposite.Direction., data$X.4, data$Normalized.abundance, data$X.13, data$X.14, data$X.15, data$X.16, data$X.17, data$X.18, data$X.19, data$X.20)
+
+colnames(export) <- c("Accession", "Description", "pValue Vei vs Cup", "pValue Cup vs Cot", "Opposite Direction", "Progenesis ANOVA", "V1", "V2", "V3", "C1", "C2", "C3", "Co1", "Co2", "Co3")
+
+write.csv(export, "ExportedDataWithTTestAndDirection.csv", row.names=FALSE)
+
+debugExport <- data.frame(data$X, data$X.12, pCup$X.pValue.)
+
+colnames(debugExport) <- c("Accession", "Description", "pValue Vei vs Cup")
+
+write.csv(debugExport, "ExportedDataWithTTestAndDirection.csv", row.names=FALSE)
+
+dput(debugExport[74,])
+```
